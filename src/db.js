@@ -9,9 +9,8 @@ const db = new sqlite3.Database(dbPath, (err) => {
     console.log('Connected to the SQLite database.');
     db.run(`CREATE TABLE IF NOT EXISTS steps (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      step_number INTEGER NOT NULL,
-      action TEXT NOT NULL,
-      status TEXT NOT NULL,
+      date TEXT UNIQUE NOT NULL,
+      count INTEGER NOT NULL,
       timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
     )`, (err) => {
       if (err) {
