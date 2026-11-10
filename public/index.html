@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yara Step Tracker Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800">
+    <div class="max-w-4xl mx-auto px-4 py-8">
+        <header class="mb-8 text-center">
+            <h1 class="text-3xl font-bold text-indigo-600">Yara Step Tracker</h1>
+            <p class="text-slate-500 mt-1">Record and monitor your daily steps and progress</p>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- Input Form Card -->
+            <div class="md:col-span-1 bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                <h2 class="text-xl font-semibold mb-4 text-slate-700">Add Steps</h2>
+                <form id="step-form" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-600 mb-1">Date</label>
+                        <input type="date" id="date-input" required
+                            class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-600 mb-1">Step Count</label>
+                        <input type="number" id="count-input" min="0" placeholder="e.g. 10000" required
+                            class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <button type="submit"
+                        class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200">
+                        Save Steps
+                    </button>
+                </form>
+            </div>
+
+            <!-- Steps List Card -->
+            <div class="md:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                <h2 class="text-xl font-semibold mb-4 text-slate-700">Recent Activity</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-100 text-slate-400 text-sm">
+                                <th class="py-2 px-3 font-medium">Date</th>
+                                <th class="py-2 px-3 font-medium">Steps</th>
+                            </tr>
+                        </thead>
+                        <tbody id="steps-table-body" class="divide-y divide-slate-50 text-slate-600">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('date-input').valueAsDate = new Date();
+
+        async function fetchSteps() {
+            try {
+                const response = await fetch('/api/steps');
+                const steps = await response.json();
+                const tbody = document.getElementById('steps-table-body');
+                tbody.innerHTML = '';
+                if (steps.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="2" class="py-4 text-center text-slate-400">No steps recorded yet.</td></tr>`;
+                    return;
+                }
+                steps.forEach(step => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="py-3 px-3">${step.date}</td>
+                        <td class="py-3 px-3 font-semibold text-indigo-600">${step.count.toLocaleString()}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (err) {
+                console.error('Failed to fetch steps', err);
+            }
+        }
+
+        document.getElementById('step-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const date = document.getElementById('date-input').value;
+            const count = parseInt(document.getElementById('count-input').value, 10);
+
+            try {
+                const res = await fetch('/api/steps', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ date, count })
+                });
+                if (res.ok) {
+                    document.getElementById('count-input').value = '';
+                    fetchSteps();
+                } else {
+                    alert('Failed to save steps.');
+                }
+            } catch (err) {
+                console.error('Error saving steps', err);
+            }
+        });
+
+        fetchSteps();
+    </script>
+</body>
+</html>

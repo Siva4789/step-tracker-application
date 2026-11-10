@@ -1,45 +1,48 @@
 const express = require('express');
+const path = require('path');
 const db = require('./db');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
+app.use(express.static(path.join(__dirname, '../public')));
 
-// Endpoint to log step data
-app.post('/api/steps', (req, res) => {
-  const { step_number, action, status } = req.body;
-  if (step_number === undefined || !action || !status) {
-    return res.status(400.json({ error: 'Missing required fields: step_number, action, status' });
-  }
-
-  const query = `INSERT INTO steps (step_number, action, status) VALUES (?, ?, ?)`;
-  db.run(query, [step_number, action, status], function(err) {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
-    res.status(201).json({
-      id: this.lastID,
-      step_number,
-      action,
-      status
+// Get all steps
+app.get('/api/steps', (req, res) => {
+    db.all('SELECT * FROM steps ORDER BY date DESC', [], (err, rows) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        res.json(rows);
     });
-  });
 });
 
-// Endpoint to fetch all step data
-app.get('/api/steps', (req, res) => {
-  const query = `SELECT * FROM steps ORDER BY timestamp DESC`;
-  db.all(query, [], (err, rows) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
+// Create or update steps for a date
+app.post('/api/steps', (req, res) => {
+    const { date, count } = req.body;
+    if (!date || count === undefined) {
+        res.status(400).json({ error: 'Date and count are required' });
+        return;
     }
-    res.json({
-      steps: rows
+
+    const query = `
+        INSERT INTO steps (date, count)
+        VALUES (?, ?)
+        ON CONFLICT(date) 
+        DO UPDATE SET count = excluded.count
+    `;
+
+    db.run(query, [date, count], function(err) {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        res.json({ id: this.lastID, date, count });
     });
-  });
 });
 
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+    console.log(`Server is running on http://localhost:${PORT}`);
 });

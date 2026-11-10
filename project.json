@@ -26,7 +26,7 @@
       "id": 2,
       "title": "Database & Backend Setup",
       "description": "Create SQLite database schema and Express endpoints for logging and fetching step data",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": 3,
