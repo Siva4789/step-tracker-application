@@ -20,7 +20,7 @@
       "id": 1,
       "title": "Project Scaffolding & package.json",
       "description": "Initialize package.json and install required dependencies like express and sqlite3",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": 2,
