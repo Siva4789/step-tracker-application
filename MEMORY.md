@@ -7,3 +7,6 @@ Added database configuration in src/db.js using sqlite3 and server routes in src
 
 ### [2026-11-10T12:07:44.344Z]
 Added public/index.html containing the dashboard UI for inputting and viewing steps, styled with TailwindCSS and connected to the backend API.
+
+### [2026-11-10T12:07:50.903Z]
+Updated public/index.html to include Chart.js, dynamic data fetching from /api/steps, form submission handling, and step trend visualization.

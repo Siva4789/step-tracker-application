@@ -1,109 +1,178 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yara Step Tracker Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Step Tracker Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-slate-50 min-h-screen text-slate-800">
-    <div class="max-w-4xl mx-auto px-4 py-8">
-        <header class="mb-8 text-center">
-            <h1 class="text-3xl font-bold text-indigo-600">Yara Step Tracker</h1>
-            <p class="text-slate-500 mt-1">Record and monitor your daily steps and progress</p>
-        </header>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <!-- Input Form Card -->
-            <div class="md:col-span-1 bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-                <h2 class="text-xl font-semibold mb-4 text-slate-700">Add Steps</h2>
-                <form id="step-form" class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-600 mb-1">Date</label>
-                        <input type="date" id="date-input" required
-                            class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-600 mb-1">Step Count</label>
-                        <input type="number" id="count-input" min="0" placeholder="e.g. 10000" required
-                            class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    </div>
-                    <button type="submit"
-                        class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200">
-                        Save Steps
-                    </button>
-                </form>
-            </div>
+  <div class="max-w-4xl mx-auto px-4 py-8">
+    <header class="mb-8">
+      <h1 class="text-3xl font-bold tracking-tight text-slate-900">Step Tracker</h1>
+      <p class="text-slate-600">Log your daily steps and monitor your progress over time.</p>
+    </header>
 
-            <!-- Steps List Card -->
-            <div class="md:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-                <h2 class="text-xl font-semibold mb-4 text-slate-700">Recent Activity</h2>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="border-b border-slate-100 text-slate-400 text-sm">
-                                <th class="py-2 px-3 font-medium">Date</th>
-                                <th class="py-2 px-3 font-medium">Steps</th>
-                            </tr>
-                        </thead>
-                        <tbody id="steps-table-body" class="divide-y divide-slate-50 text-slate-600">
-                            <!-- Populated via JS -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <!-- Input Form Card -->
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 md:col-span-1">
+        <h2 class="text-lg font-semibold mb-4 text-slate-800">Log Steps</h2>
+        <form id="step-form" class="space-y-4">
+          <div>
+            <label for="date-input" class="block text-sm font-medium text-slate-700 mb-1">Date</label>
+            <input type="date" id="date-input" required
+              class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          </div>
+          <div>
+            <label for="steps-input" class="block text-sm font-medium text-slate-700 mb-1">Steps</label>
+            <input type="number" id="steps-input" min="0" placeholder="e.g., 10000" required
+              class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          </div>
+          <button type="submit" 
+            class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-lg transition duration-150 text-sm">
+            Save Entry
+          </button>
+        </form>
+      </div>
+
+      <!-- Chart Card -->
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 md:col-span-2 flex flex-col">
+        <h2 class="text-lg font-semibold mb-4 text-slate-800">Activity Overview</h2>
+        <div class="flex-1 relative min-h-[250px]">
+          <canvas id="stepsChart"></canvas>
         </div>
+      </div>
     </div>
 
-    <script>
-        document.getElementById('date-input').valueAsDate = new Date();
+    <!-- Recent History Table -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+      <h2 class="text-lg font-semibold mb-4 text-slate-800">Recent History</h2>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-sm">
+          <thead>
+            <tr class="border-b border-slate-200 text-slate-500">
+              <th class="py-3 px-4 font-medium">Date</th>
+              <th class="py-3 px-4 font-medium text-right">Steps</th>
+            </tr>
+          </thead>
+          <tbody id="steps-table-body" class="divide-y divide-slate-100">
+            <tr>
+              <td colspan="2" class="py-4 text-center text-slate-400">Loading entries...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 
-        async function fetchSteps() {
-            try {
-                const response = await fetch('/api/steps');
-                const steps = await response.json();
-                const tbody = document.getElementById('steps-table-body');
-                tbody.innerHTML = '';
-                if (steps.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="2" class="py-4 text-center text-slate-400">No steps recorded yet.</td></tr>`;
-                    return;
-                }
-                steps.forEach(step => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td class="py-3 px-3">${step.date}</td>
-                        <td class="py-3 px-3 font-semibold text-indigo-600">${step.count.toLocaleString()}</td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-            } catch (err) {
-                console.error('Failed to fetch steps', err);
+  <script>
+    // Set default date to today
+    const todayStr = new Date().toISOString().split('T')[0];
+    document.getElementById('date-input').value = todayStr;
+
+    let stepsChart = null;
+
+    async function fetchSteps() {
+      try {
+        const response = await fetch('/api/steps');
+        if (!response.ok) throw new Error('Failed to fetch steps');
+        const data = await response.json();
+        updateUI(data);
+      } catch (err) {
+        console.error(err);
+        alert('Could not load step data.');
+      }
+    }
+
+    function updateUI(steps) {
+      // Sort ascending by date for chart and table
+      const sorted = [...steps].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+      // Update Table (recent first)
+      const tableBody = document.getElementById('steps-table-body');
+      const tableSorted = [...steps].sort((a, b) => new Date(b.date) - new Date(a.date));
+      
+      if (tableSorted.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="2" class="py-4 text-center text-slate-400">No entries recorded yet.</td></tr>`;
+      } else {
+        tableBody.innerHTML = tableSorted.map(entry => `
+          <tr class="hover:bg-slate-50">
+            <td class="py-3 px-4 text-slate-700">${entry.date}</td>
+            <td class="py-3 px-4 text-right font-medium text-slate-900">${entry.steps.toLocaleString()}</td>
+          </tr>
+        `).join('');
+      }
+
+      // Update Chart
+      const labels = sorted.map(e => e.date);
+      const dataValues = sorted.map(e => e.steps);
+
+      const ctx = document.getElementById('stepsChart').getContext('2d');
+      if (stepsChart) {
+        stepsChart.data.labels = labels;
+        stepsChart.data.datasets[0].data = dataValues;
+        stepsChart.update();
+      } else {
+        stepsChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Steps',
+              data: dataValues,
+              borderColor: '#4f46e5',
+              backgroundColor: 'rgba(79, 70, 229, 0.1)',
+              borderWidth: 2,
+              fill: true,
+              tension: 0.1
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                grid: { color: '#f1f5f9' }
+              },
+              x: {
+                grid: { display: false }
+              }
             }
-        }
+          }
+        });
+      }
+    }
 
-        document.getElementById('step-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const date = document.getElementById('date-input').value;
-            const count = parseInt(document.getElementById('count-input').value, 10);
+    document.getElementById('step-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const date = document.getElementById('date-input').value;
+      const steps = parseInt(document.getElementById('steps-input').value, 10);
 
-            try {
-                const res = await fetch('/api/steps', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ date, count })
-                });
-                if (res.ok) {
-                    document.getElementById('count-input').value = '';
-                    fetchSteps();
-                } else {
-                    alert('Failed to save steps.');
-                }
-            } catch (err) {
-                console.error('Error saving steps', err);
-            }
+      try {
+        const response = await fetch('/api/steps', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ date, steps })
         });
 
+        if (!response.ok) throw new Error('Failed to save step entry');
+        
+        document.getElementById('steps-input').value = '';
         fetchSteps();
-    </script>
+      } catch (err) {
+        console.error(err);
+        alert('Failed to save steps.');
+      }
+    });
+
+    // Initial fetch
+    fetchSteps();
+  </script>
 </body>
 </html>
