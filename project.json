@@ -38,7 +38,7 @@
       "id": 4,
       "title": "Core Interactive Logic & Integration",
       "description": "Implement frontend JavaScript to communicate with the backend API, update state, and render charts",
-      "status": "pending"
+      "status": "completed"
     }
   ]
 }
