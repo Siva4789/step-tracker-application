@@ -1,0 +1,44 @@
+{
+  "name": "step-tracker-app",
+  "title": "Step Tracker Application",
+  "description": "A lightweight web application to track daily step counts, monitor fitness goals, and view historical progress.",
+  "techStack": {
+    "frontend": "HTML5 / TailwindCSS / Vanilla JS",
+    "backend": "Node.js (Express)",
+    "database": "SQLite"
+  },
+  "folderStructure": [
+    "server/index.js",
+    "server/database.js",
+    "public/index.html",
+    "public/styles.css",
+    "public/script.js",
+    "package.json"
+  ],
+  "tasks": [
+    {
+      "id": 1,
+      "title": "Project Scaffolding & package.json",
+      "description": "Initialize package.json and install required dependencies like express and sqlite3",
+      "status": "pending"
+    },
+    {
+      "id": 2,
+      "title": "Database & Backend Setup",
+      "description": "Create SQLite database schema and Express endpoints for logging and fetching step data",
+      "status": "pending"
+    },
+    {
+      "id": 3,
+      "title": "Core Frontend UI",
+      "description": "Build the dashboard layout using HTML5 and TailwindCSS for inputting and viewing steps",
+      "status": "pending"
+    },
+    {
+      "id": 4,
+      "title": "Core Interactive Logic & Integration",
+      "description": "Implement frontend JavaScript to communicate with the backend API, update state, and render charts",
+      "status": "pending"
+    }
+  ]
+}
